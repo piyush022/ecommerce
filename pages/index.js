@@ -1,5 +1,5 @@
 import styles from "@/styles/Home.module.css";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Form, FormGroup, FormControl, Button } from "react-bootstrap";
 import { toast } from "sonner";
 import axios from "axios";
@@ -22,6 +22,17 @@ export default function Home() {
   const [toggle, settoggle] = useState(true);
 
   const router = useRouter();
+
+  useEffect(() => {
+    const admin = localStorage.getItem("mobAdmin");
+    const user = localStorage.getItem("mobuser");
+    if (admin) {
+      router.push("/admin/admin-home");
+    }
+    if (user) {
+      router.push("/homepage");
+    }
+  }, []);
 
   async function handleRegister(e) {
     e.preventDefault();
@@ -71,14 +82,16 @@ export default function Home() {
 
         const token = res.data.token;
         const username = res.data.data[0].firstname;
+        const userData = JSON.stringify(res.data.data[0]);
         localStorage.setItem("mobToken", token);
         localStorage.setItem("mobuser", username);
+        localStorage.setItem("userData", userData);
 
         setloginEmail("");
         setloginPassword("");
         router.push("/homepage");
       } else {
-        toast.error("login failed");
+        toast.error(res.data.msg);
       }
     } else {
       toast.error("all fields are required");

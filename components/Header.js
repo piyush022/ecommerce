@@ -29,8 +29,7 @@ const Header = () => {
   return (
     <>
       <Navbar className="bg-body-white navBar">
-        <Container>
-          <span>Dashboard</span>
+        <div className="navBtns">
           {userName != "" || adminName != "" ? (
             <>
               <span>
@@ -45,15 +44,11 @@ const Header = () => {
             </>
           ) : null}
           {router.pathname === "/" ? (
-            <Link
-              href="/admin"
-              className="btn btn-sm btn-dark mx-3"
-              onClick={logout}
-            >
+            <Link href="/admin" className="btn btn-sm btn-dark mx-3">
               Admin Login
             </Link>
           ) : null}
-        </Container>
+        </div>
       </Navbar>
     </>
   );

@@ -1,9 +1,23 @@
 import Link from "next/link";
+
+import { useEffect } from "react";
+import { useRouter } from "next/router";
 const Homepage = () => {
+  const router = useRouter();
+  useEffect(() => {
+    checkToken();
+  }, []);
+
+  function checkToken() {
+    const adminToken = localStorage.getItem("mobAdminToken");
+    if (!adminToken) {
+      router.push("/admin");
+    }
+  }
   const options = [
     { text: "User manage", link: "/admin/user-manage" },
-    { text: "Warehouse manage", link: "/admin/warehouse-manage" },
-    { text: "Product manage", link: "/admin/product-manage" },
+
+    { text: "Orders manage", link: "/admin/order-manage" },
   ];
   return (
     <>

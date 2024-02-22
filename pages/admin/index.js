@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Form, FormGroup, FormControl, Button } from "react-bootstrap";
 import axios from "axios";
 import { toast } from "sonner";
@@ -11,34 +11,49 @@ const AdminHome = () => {
   const [toggle, settoggle] = useState(true);
   const router = useRouter();
 
+  useEffect(() => {
+    const admin = localStorage.getItem("mobAdmin");
+    const user = localStorage.getItem("mobuser");
+    if (admin) {
+      router.push("/admin/admin-home");
+    }
+    if (user) {
+      router.push("/homepage");
+    }
+  }, []);
+
   async function handleLogin(e) {
     e.preventDefault();
-    if (loginemail != "" || (loginphone != "" && loginpassword != "")) {
-      const data = {
-        email: loginemail,
-        password: loginpassword,
-        phone: loginphone,
-      };
-      const res = await axios.post(
-        process.env.NEXT_PUBLIC_SITE_URL + "/admin/api/adminLogin",
-        data
-      );
-      console.log(res);
-      if (res.data.success) {
-        toast.success("login Successful");
-        const token = res.data.token;
-        const username = res.data.data[0].firstname;
-        localStorage.setItem("mobAdminToken", token);
-        localStorage.setItem("mobAdmin", username);
+    try {
+      if (loginemail != "" || (loginphone != "" && loginpassword != "")) {
+        const data = {
+          email: loginemail,
+          password: loginpassword,
+          phone: loginphone,
+        };
+        const res = await axios.post(
+          process.env.NEXT_PUBLIC_SITE_URL + "/admin/api/adminLogin",
+          data
+        );
+        console.log(res);
+        if (res.data.success) {
+          toast.success("login Successful");
+          const token = res.data.token;
+          const username = res.data.data[0].firstname;
+          localStorage.setItem("mobAdminToken", token);
+          localStorage.setItem("mobAdmin", username);
 
-        setloginEmail("");
-        setloginPassword("");
-        router.push("/admin/admin-home");
+          setloginEmail("");
+          setloginPassword("");
+          router.push("/admin/admin-home");
+        } else {
+          toast.error("login failed");
+        }
       } else {
-        toast.error("login failed");
+        toast.error("all fields are required");
       }
-    } else {
-      toast.error("all fields are required");
+    } catch (err) {
+      console.log(err);
     }
   }
 

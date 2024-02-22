@@ -3,16 +3,16 @@ import { useEffect, useState } from "react";
 import { Table } from "react-bootstrap";
 import { toast } from "sonner";
 import { useRouter } from "next/router";
-const UserManage = () => {
-  const [users, setusers] = useState([]);
+
+const Orders = () => {
+  const [orders, setorders] = useState([]);
   const [token, setToken] = useState("");
   const router = useRouter();
-
   useEffect(() => {
     checkToken();
     const tok = localStorage.getItem("mobAdminToken");
     setToken(tok);
-    getAllUsers();
+    getOrders();
   }, []);
 
   function checkToken() {
@@ -22,30 +22,16 @@ const UserManage = () => {
     }
   }
 
-  async function getAllUsers() {
-    const result = await axios.get(
-      process.env.NEXT_PUBLIC_SITE_URL + "/user/api/getAllUsers"
-    );
-    // console.log(result);
-    if (result.data.success) {
-      setusers(result.data.data);
-    } else {
-      toast.error("something went wrong while getting users");
-    }
-  }
-
-  async function deleteUser(id) {
+  async function getOrders() {
     try {
-      console.log(token);
-      if (token != "") {
-        const result = await axios.post(
-          process.env.NEXT_PUBLIC_SITE_URL + "/user/api/deleteUser",
-          { id: id, token: token }
-        );
-        if (result.data.success) {
-          toast.success("User Deleted");
-          getAllUsers();
-        }
+      const res = await axios.get(
+        process.env.NEXT_PUBLIC_SITE_URL + "/admin/api/getOrders"
+      );
+      if (res.data.success) {
+        console.log(res);
+        setorders(res.data.data);
+      } else {
+        toast.error("Something went wrong");
       }
     } catch (err) {
       toast.error(err.message);
@@ -53,15 +39,16 @@ const UserManage = () => {
   }
 
   async function handleApproval(task, id) {
+    console.log("orderid", id);
     try {
-      task === "Approve" ? (task = true) : (task = false);
+      task === "Approve" ? (task = "Placed") : (task = "Denied by Admin");
       const result = await axios.post(
-        process.env.NEXT_PUBLIC_SITE_URL + "/admin/api/userApproval",
-        { id: id, approved: task, token: token }
+        process.env.NEXT_PUBLIC_SITE_URL + "/admin/api/orderStatus",
+        { id: id, status: task, token: token }
       );
       if (result.data.success) {
-        toast.success("status change saved");
-        getAllUsers();
+        toast.success("status changed");
+        getOrders();
       } else {
         toast.error(result.data.msg);
       }
@@ -72,35 +59,54 @@ const UserManage = () => {
 
   return (
     <>
-      <div className="main container">
+      <div className="main container mt-5">
         <div className="container mt-5">
-          <h2 className="mb-5">MANAGE USERS</h2>
+          <h2 className="mb-5">MANAGE ORDERS</h2>
           <Table responsive>
             <thead>
               <tr>
                 <th>No</th>
-                <th>First NAme</th>
+                <th>First Name</th>
                 <th>Last Name</th>
                 <th>Phone</th>
                 <th>Email</th>
+                <th>Products</th>
+                <th>Amount</th>
                 <th>Status</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody>
-              {users.map((item, index) => (
+              {orders.map((item, index) => (
                 <tr key={item._id}>
                   <td>{index + 1}</td>
-                  <td>{item.firstname}</td>
-                  <td>{item.lastname}</td>
-                  <td>{item.phone}</td>
-                  <td>{item.email}</td>
-                  <td>{item.approved ? "approved" : "not approved"}</td>
+                  <td>{item.userData[0].firstname}</td>
+                  <td>{item.userData[0].lastname}</td>
+                  <td>{item.userData[0].phone}</td>
+                  <td>{item.userData[0].email}</td>
                   <td>
-                    {item.approved ? (
+                    {item.orderedProduct.map((item, index) => (
+                      <span key={index}>
+                        <p>{item.name}</p>
+                      </span>
+                    ))}
+                  </td>
+
+                  <td>{item.totalPrice}</td>
+                  <td>
+                    {item.status == "pending" ? (
+                      <>
+                        <p className="text-danger">{item.status}</p>
+                      </>
+                    ) : (
+                      item.status
+                    )}
+                  </td>
+                  <td>
+                    {item.status == "Placed" ? (
                       <>
                         <button
-                          className="btn btn-sm btn-secondary mx-1"
+                          className="btn btn-sm btn-danger mx-1"
                           onClick={() => handleApproval("Disapprove", item._id)}
                         >
                           DisApprove
@@ -109,19 +115,13 @@ const UserManage = () => {
                     ) : (
                       <>
                         <button
-                          className="btn btn-sm btn-secondary mx-1"
+                          className="btn btn-sm btn-warning mx-1"
                           onClick={() => handleApproval("Approve", item._id)}
                         >
                           Approve
                         </button>
                       </>
                     )}
-                    <button
-                      className="btn btn-sm btn-warning"
-                      onClick={() => deleteUser(item._id)}
-                    >
-                      Delete
-                    </button>
                   </td>
                 </tr>
               ))}
@@ -133,4 +133,4 @@ const UserManage = () => {
   );
 };
 
-export default UserManage;
+export default Orders;
