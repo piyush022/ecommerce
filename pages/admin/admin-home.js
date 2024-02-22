@@ -16,7 +16,7 @@ const Homepage = () => {
   }
   const options = [
     { text: "User manage", link: "/admin/user-manage" },
-
+{ text: "Products manage", link: "/admin/product-manage" },
     { text: "Orders manage", link: "/admin/order-manage" },
   ];
   return (
